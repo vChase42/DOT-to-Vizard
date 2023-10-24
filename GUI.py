@@ -29,7 +29,7 @@ class DOT_Configuration:
 
 		#add config address-bone pairs
 		for key,value in addr_bone_dic.items():
-			print(key,value)
+			#print(key,value)
 			self.add_sensor(key,value)
 		
 		self.done_func = call_back_func
@@ -119,7 +119,8 @@ class DOT_Configuration:
 			body_part = bone_list[dlg_obj[3].getSelection()]
 			
 			new_dictionary[address] = body_part
-		#print("configuration sent", new_dictionary)
+		print("configuration sent", new_dictionary)
+		print(self.done_func)
 		self.done_func(new_dictionary)
 		self.my_panel.remove()
 
@@ -128,14 +129,79 @@ addr_bone_dic = {
 	"01:00:00:00:00:00":"Bip01 R UpperArm",
 	"02:00:00:00:00:00":"Bip01 R Hand",
 }
+
+
 def print_addresses(my_dictionary):
 	print("SELECTED ADDRESS-BODY_PART PAIRS:")
 	for key,bone in my_dictionary.items():
 		print(key,bone)
 	
-
 if __name__ == "__main__":
 	viz.go()
 	my_config = DOT_Configuration(print_addresses,addr_bone_dic)
 
+class DOT_Status:
+	def __init__(self, addr_bone_dictionary):
+		self.addr_bone_dictionary = addr_bone_dictionary
+		self.my_panel = vizinfo.InfoPanel('Current Devices.',title='Device Status', align=viz.ALIGN_LEFT_TOP, icon=False) #init panel
+		
+		self.addr_write_dictionary = {}
+		self.addr_calibrate_dictionary = {}
 
+		self.populate_panel()
+
+		for key,value in addr_bone_dictionary.items():
+		#	#populate an address/button dictionary
+			self.add_sensor(key,value)
+
+
+	def populate_panel(self):
+
+		self.my_panel.addSeparator()
+		
+		self.dlg_sensors = vizdlg.GridPanel(cellAlign=vizdlg.ALIGN_LEFT_CENTER,border=False,background=False,margin=0)
+		
+		body_text = viz.addText('Body Part')
+		status = viz.addText('Status')
+		file = viz.addText('Write To File')
+		calibrate = viz.addText('Calibrate')
+		
+		self.dlg_sensors.addRow([body_text,status,file,calibrate])
+		
+		self.my_panel.addItem(self.dlg_sensors)
+		
+		
+
+	def add_sensor(self,address,body_part):
+		body_text = viz.addText(body_part)
+		status = viz.addText('Unimplemented')		
+		file = viz.addCheckbox()
+		calibrate = viz.addButtonLabel('---')
+		
+		self.dlg_sensors.addRow([body_text,status,file,calibrate])
+
+		self.addr_write_dictionary[address] = file
+		self.addr_calibrate_dictionary[address] = calibrate
+		
+		
+	def add_write_callback(self,address,callback_func):
+		vizact.onbuttondown(self.addr_write_dictionary[address],callback_func,True)
+		vizact.onbuttonup(self.addr_write_dictionary[address],callback_func,False)
+		
+		
+	def add_calibrate_callback(self,address, callback_func):
+		vizact.onbuttondown(self.addr_calibrate_dictionary[address],callback_func)
+
+
+def write_callback_test(value):
+	print(value)
+	
+def calibrate_callback_test():
+	print("Calibration request received")
+
+if __name__ == "__main__":
+	my_status = DOT_Status(addr_bone_dic)
+
+	for key in addr_bone_dic.keys():
+		my_status.add_write_callback(key,write_callback_test)
+		my_status.add_calibrate_callback(key,calibrate_callback_test)

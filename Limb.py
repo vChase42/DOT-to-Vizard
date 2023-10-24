@@ -3,6 +3,7 @@ import viz
 import math
 import asyncio
 import numpy as np
+import vizcam
 
 import csv
 
@@ -126,7 +127,20 @@ class Limb:
 
         self.writer.writerow(my_dictionary)
         
+    def send_calibrate_message(self):
+        print("Calibrate message request received")
+        pass
         
+    def set_writing(self,value):
+        print("Function ran with value:",value)
+        self.writeData = value
+        
+    def get_status(self):
+        if(self.client.is_connected):
+            return "Connected"
+        else:
+            return "Disconnected"
+        #possible return values: DISCONNECTED, CONNECTED, STREAMING
         
         
 if __name__ == "__main__":
@@ -138,4 +152,4 @@ if __name__ == "__main__":
     address = "D4:22:CD:00:57:48" # Movella DOT UUID
     body_part = 'Bip01 R UpperArm'
     
-    my_limb = Limb(body_part,address,avatar)
+    my_limb = Limb(address,body_part,avatar)
