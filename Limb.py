@@ -21,27 +21,30 @@ class Limb:
         self.address = dot_address
 
         self.measurement_characteristic_uuid = '15172001-4947-11e9-8646-d663bd873d93'
-        self.long_payload_characteristic_uuid = '15172002-4947-11e9-8646-d663bd873d93'
-        self.binary_message = b"\x01\x01\x26"  #custommode5
+        #self.long_payload_characteristic_uuid = '15172002-4947-11e9-8646-d663bd873d93'
+        self.short_payload_characteristic_uuid = "15172004-4947-11e9-8646-d663bd873d93"
+
+        self.binary_message = b"\x01\x01\x05"  #custommode5
             
-        self.max_timestamp = 0
+        #self.max_timestamp = 0
         
+        #file management
         self.writeData = write
         self.filename = f"output_{self.limb_name}.csv"
         self.file = None
         self.writer = None        
 
         
-        print(limb_name)
+        
         viz.director(self.director_func)  #BEGIN DATA STREAMING
 
 
     def notification_callback(self, sender, data):
         
-        data_dictionary = self.encode_custommode5(data)[0]
-        #print(f"Timestamp: {data_dictionary['timestamp']}, Quaternion-w: {data_dictionary[quatw]}")
+        data_dictionary = self.encode_quaternion(data)[0]
+        #print(f"Timestamp: {data_dictionary['timestamp']}, Quaternion-w: {data_dictionary['quatw']}")
         quaternion = viz.Quat(data_dictionary['quatw'],data_dictionary['quatx'],data_dictionary['quaty'],data_dictionary['quatz'])
-        self.avatar.setQuat(quaternion)
+        self.limb_bone.setQuat(quaternion)
         # hand.setPosition(hand.getPosition()+viz.Vector(x,y,z))
         
         if(self.writeData):
@@ -75,21 +78,40 @@ class Limb:
         
         return formatted_data
         
+    def encode_quaternion(self,bytes_):
+        data_segments = np.dtype([
+            ('timestamp', np.uint32),
+            ('quatw', np.float32),
+            ('quatx', np.float32),
+            ('quaty', np.float32),
+            ('quatz', np.float32)
+            ])
+        byte_len = len(bytes_)
+        if(byte_len != 20):
+            print(f"There are {byte_len} bytes being received, not 20, proceeding anyways")
+        try:
+            formatted_data = np.frombuffer(bytes_[0:20], dtype=data_segments)
+        except Exception as e:
+            formatted_data = [{}]
+            print(f"FAILURE: {e}")
+
+        return formatted_data
+        
         
 
     async def establish_streaming(self):
         try:
             async with BleakClient(self.address) as client:
-                print(f"Connection status for client {address}: {client.is_connected}") 
+                print(f"Connection status for client {self.address}: {client.is_connected}") 
                 self.client = client
                 await asyncio.sleep(1)
                 if client.is_connected:
-                    await client.start_notify(self.long_payload_characteristic_uuid, self.notification_callback)
+                    await client.start_notify(self.short_payload_characteristic_uuid, self.notification_callback)
                     await client.write_gatt_char(self.measurement_characteristic_uuid, self.binary_message, response=True)
 
-                    await asyncio.sleep(100.0)                                                                                               #TIME TO STAY ON
+                    await asyncio.sleep(200.0)                                                                                               #TIME TO STAY ON
                     
-                    await client.stop_notify(self.long_payload_characteristic_uuid)
+                    await client.stop_notify(self.short_payload_characteristic_uuid)
                     await client.disconnect()
         except Exception as e:
             print(f"Exception occurred: {e}")
@@ -107,7 +129,7 @@ class Limb:
     
     
     
-    def _initialize_writer(self):   #if file does not exist, call this
+    def _initialize_writer(self, my_dictionary):   #if file does not exist, call this
         file_exists = False
         try:
             with open(self.filename, 'r') as f:
@@ -116,23 +138,32 @@ class Limb:
             pass
 
         self.file = open(self.filename, 'a', newline='')
-        self.writer = csv.DictWriter(self.file, fieldnames=list(self.encode_custommode1(b'').dtype.names))
+        self.writer = csv.DictWriter(self.file, fieldnames=list(my_dictionary.keys()))
         
         if not file_exists:
             self.writer.writeheader()
 
     def write_row_to_file(self, my_dictionary):
         if self.writer is None:
-            self._initialize_writer()
+            self._initialize_writer(my_dictionary)
 
         self.writer.writerow(my_dictionary)
         
     def send_calibrate_message(self):
-        print("Calibrate message request received")
-        pass
+
+        asyncio.run(self.async_send_calibrate_message())
         
+    async def async_send_calibrate_message(self):
+        calibrate_message = b"\x00\x01"
+        calibrate_characteristic_uuid = "15172006-4947-11e9-8646-d663bd873d93"
+
+        print("async func running")
+        await self.client.write_gatt_char(calibrate_characteristic_uuid , calibrate_message, response=True)
+        print("async func ending")
+        
+    
     def set_writing(self,value):
-        print("Function ran with value:",value)
+        print("Streaming data will now be written to file:",value)
         self.writeData = value
         
     def get_status(self):

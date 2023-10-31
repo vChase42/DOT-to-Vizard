@@ -147,6 +147,7 @@ class DOT_Status:
 		
 		self.addr_write_dictionary = {}
 		self.addr_calibrate_dictionary = {}
+		self.addr_status_dictionary = {}
 
 		self.populate_panel()
 
@@ -174,14 +175,15 @@ class DOT_Status:
 
 	def add_sensor(self,address,body_part):
 		body_text = viz.addText(body_part)
-		status = viz.addText('Unimplemented')		
+		status = viz.addText('Getting Status')		
 		file = viz.addCheckbox()
-		calibrate = viz.addButtonLabel('---')
+		calibrate = viz.addButtonLabel('Calibrate')
 		
 		self.dlg_sensors.addRow([body_text,status,file,calibrate])
 
 		self.addr_write_dictionary[address] = file
 		self.addr_calibrate_dictionary[address] = calibrate
+		self.addr_status_dictionary[address] = status
 		
 		
 	def add_write_callback(self,address,callback_func):
@@ -191,6 +193,10 @@ class DOT_Status:
 		
 	def add_calibrate_callback(self,address, callback_func):
 		vizact.onbuttondown(self.addr_calibrate_dictionary[address],callback_func)
+		
+	def set_status_text(self,address,text):
+		
+		self.addr_status_dictionary[address].message(text)
 
 
 def write_callback_test(value):
@@ -204,4 +210,4 @@ if __name__ == "__main__":
 
 	for key in addr_bone_dic.keys():
 		my_status.add_write_callback(key,write_callback_test)
-		my_status.add_calibrate_callback(key,calibrate_callback_test)
+		my_status.add_calibrate_callback(key,my_status.set_status_text)

@@ -35,8 +35,8 @@ bone_list = [
 #EDIT THIS FOR DEFAULT ADDRESSES
 bone_addresses = {
     'D4:22:CD:00:57:48' : 'Bip01 R UpperArm',
-    'D4:22:CD:00:57:47' : 'Bip01 R Forearm', #Made up address
-    'D4:22:CD:00:57:46' : 'Bip01 R Hand',  #Made up address
+#    'D4:22:CD:00:57:47' : 'Bip01 R Forearm', #Made up address
+#    'D4:22:CD:00:57:46' : 'Bip01 R Hand',  #Made up address
   }
 
 
@@ -45,11 +45,12 @@ dot_config_UI = None
 sensor_statuses_UI = None
 
 
-def main(bone_addr_dictionary):
-	init_UI_and_Limbs(bone_addr_dictionary)
-	#viztask.schedule(main_loop(bone_addr_dictionary))
+def main(addr_bone_dictionary):
+	init_UI_and_Limbs(addr_bone_dictionary)
+	viztask.schedule(main_loop(addr_bone_dictionary))
 
 def init_UI_and_Limbs(my_dictionary):
+	global sensor_statuses_UI
 	#init corner GUI
 	
 	print("init UI and limbs")
@@ -63,10 +64,16 @@ def init_UI_and_Limbs(my_dictionary):
 		sensor_statuses_UI.add_calibrate_callback(address,new_limb.send_calibrate_message)
 		
 
-def main_loop(bone_addr_dictionary):
-	print("main_loop")
+def main_loop(addr_bone_dictionary):
+	global sensor_statuses_UI
+	yield viztask.waitTime(1)
+
 	while True:
 		#update UI
+		
+		for address,bone in addr_bone_dictionary.items():
+			curr_status = my_limbs[address].get_status()
+			sensor_statuses_UI.set_status_text(address,curr_status)
 		yield viztask.waitTime(10)
 	
 
