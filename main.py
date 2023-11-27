@@ -45,7 +45,7 @@ dot_config_UI = None
 sensor_statuses_UI = None
 
 
-def main(addr_bone_dictionary):
+def start_configuration(addr_bone_dictionary):
 	init_UI_and_Limbs(addr_bone_dictionary)
 	viztask.schedule(main_loop(addr_bone_dictionary))
 
@@ -65,6 +65,7 @@ def init_UI_and_Limbs(my_dictionary):
 		
 
 def main_loop(addr_bone_dictionary):
+	#print("entering main loop")
 	global sensor_statuses_UI
 	yield viztask.waitTime(1)
 
@@ -72,6 +73,8 @@ def main_loop(addr_bone_dictionary):
 		#update UI
 		
 		for address,bone in addr_bone_dictionary.items():
+			#my_limbs[address].write_row_to_file(addr_bone_dictionary)
+			#print("printed another line")
 			curr_status = my_limbs[address].get_status()
 			sensor_statuses_UI.set_status_text(address,curr_status)
 		yield viztask.waitTime(10)
@@ -81,6 +84,6 @@ def main_loop(addr_bone_dictionary):
 
 
 if __name__ == "__main__":
-	dot_config_UI = DOT_Configuration(main,bone_addresses)
+	dot_config_UI = DOT_Configuration(start_configuration,bone_addresses)
 
 
