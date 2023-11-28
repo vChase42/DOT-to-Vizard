@@ -1,4 +1,5 @@
 ﻿from bleak import BleakClient
+from dataprocessing import dataprocess_callback
 import viz
 import math
 import asyncio
@@ -225,8 +226,6 @@ class Limb:
         return [type_description, action_description, payload_mode_description, self.stream_success]
         
     
-
-
 if __name__ == "__main__":
     viz.go()
     #env = viz.addChild('Environments/serving_room.osgb')
@@ -236,4 +235,5 @@ if __name__ == "__main__":
     address = "D4:22:CD:00:57:48" # Movella DOT UUID
     body_part = 'Bip01 R UpperArm'
     
-    my_limb = Limb(address,body_part,avatar)
+    my_limb = Limb(address,body_part,avatar, dataprocess_callback)
+
