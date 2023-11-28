@@ -119,8 +119,7 @@ class DOT_Configuration:
 			body_part = bone_list[dlg_obj[3].getSelection()]
 			
 			new_dictionary[address] = body_part
-		print("configuration sent", new_dictionary)
-		print(self.done_func)
+		#print("configuration sent", new_dictionary)
 		self.done_func(new_dictionary)
 		self.my_panel.remove()
 
@@ -170,6 +169,8 @@ class DOT_Status:
 		self.dlg_sensors.addRow([body_text,status,file,calibrate])
 		
 		self.my_panel.addItem(self.dlg_sensors)
+		self.exit_button = self.my_panel.addItem(viz.addButtonLabel('Exit'))
+		
 		
 		
 
@@ -194,6 +195,9 @@ class DOT_Status:
 	def add_calibrate_callback(self,address, callback_func):
 		vizact.onbuttondown(self.addr_calibrate_dictionary[address],callback_func)
 		
+	def add_exit_callback(self,callback_func):
+		vizact.onbuttondown(self.exit_button,callback_func)
+	
 	def set_status_text(self,address,text):
 		
 		self.addr_status_dictionary[address].message(text)
@@ -204,10 +208,14 @@ def write_callback_test(value):
 	
 def calibrate_callback_test():
 	print("Calibration request received")
+	
+def exit_callback_test():
+	viz.quit()
 
 if __name__ == "__main__":
 	my_status = DOT_Status(addr_bone_dic)
 
 	for key in addr_bone_dic.keys():
 		my_status.add_write_callback(key,write_callback_test)
-		my_status.add_calibrate_callback(key,my_status.set_status_text)
+		my_status.add_calibrate_callback(key,calibrate_callback_test)
+		my_status.add_exit_callback(exit_callback_test)
