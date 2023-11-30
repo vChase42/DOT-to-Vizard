@@ -18,32 +18,38 @@ class Limb:
     def __init__(self, dot_address, limb_name, avatar, callback_func, write = False):
         self.ACTIVE = True
         
+        #limb identification variables
         self.avatar = avatar
         self.limb_name = limb_name
         self.limb_bone = self.avatar.getBone(limb_name)
         self.limb_bone.lock()
         self.dataprocesser_callback = callback_func
         
-        self.client = BleakClient("00:00:00:00:00:00")  #hardcoded in case of client_status() call
+        #limb coordinate calibration
+        self.calibrate_quat = viz.Quat(1,0,0,0)
+        self.current_quat = viz.Quat(1,0,0,0)
+        
+        #Xsens DOT sensor variables
+        self.client = BleakClient("00:00:00:00:00:00")  
         self.address = dot_address
 
         self.measurement_characteristic_uuid = '15172001-4947-11e9-8646-d663bd873d93'
         self.long_payload_characteristic_uuid = '15172002-4947-11e9-8646-d663bd873d93'
-        self.short_payload_characteristic_uuid = "15172004-4947-11e9-8646-d663bd873d93"
-
+        #self.short_payload_characteristic_uuid = "15172004-4947-11e9-8646-d663bd873d93"
         self.binary_message = b"\x01\x01\x1a"  #custommode5
-            
-        #self.max_timestamp = 0
-        
+
+                    
         #file management
         self.writeData = write
         self.filename = f"output_{self.limb_name}.csv"
         self.file = None
         self.writer = None        
 
+        #status variables
         self.stream_success = False
         self.status = ["Disconnected"]    #status[0] = Device Valid or Invalid, status[1] = Streaming or Inactive, status[2] = Streaming Mode, status[4] = self.stream_success
         
+        #program exit variables
         self.close_success = False
         
         viz.director(self.director_func)  #BEGIN DATA STREAMING
@@ -51,10 +57,10 @@ class Limb:
 
     def notification_callback(self, sender, data):
         self.stream_success = True
-        
         data_dictionary = self.encode_custommode5(data)
-        
-        self.dataprocesser_callback(self.avatar, self.limb_bone, data_dictionary)
+
+        self.current_quat = viz.Quat(data_dictionary['quatw'],data_dictionary['quatx'],data_dictionary['quaty'],data_dictionary['quatz'])
+        self.dataprocesser_callback(self.avatar, self.limb_bone, data_dictionary, self.calibrate_quat)
         
         
         if(self.writeData):
@@ -146,10 +152,15 @@ class Limb:
         self.writer.writerow(my_dictionary)
         
     def send_calibrate_message(self):
-        if(self.client.is_connected):
-            asyncio.run(self.async_send_calibrate_message())
-        else:
-            print("Client not connected")
+        desired_quat = viz.Quat(0.9239,0.0,-0.3827,0.0)
+
+        self.calibrate_quat = desired_quat * self.current_quat.inverse()
+        
+        
+        #if(self.client.is_connected):
+        #    asyncio.run(self.async_send_calibrate_message())
+        #else:
+        #    print("Client not connected")
         
     async def async_send_calibrate_message(self):
         calibrate_message = b"\x00\x01"
