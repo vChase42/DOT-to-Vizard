@@ -33,8 +33,8 @@ def main():
 			'quatz': 0.0
 		}
 		
-		A = viz.Quat(test_dic['quatw'],test_dic['quatx'],test_dic['quaty'],test_dic['quatz'])
-		C = viz.Quat(1,0,0,0)
+		A = viz.Quat(test_dic['quatx'],test_dic['quaty'],test_dic['quatz'],test_dic['quatw'])
+		C = viz.Quat(0,0,0,1)
 		
 		flag = True
 		
@@ -45,11 +45,11 @@ def main():
 
 			if(flag):
 				flag=False
-				B = viz.Quat(row_dict['quatw'],row_dict['quatx'],row_dict['quaty'],row_dict['quatz'])
+				B = viz.Quat(row_dict['quatx'],row_dict['quaty'],row_dict['quatz'],row_dict['quatw'])
 				C = B.inverse() * A
 			
 			dataprocess_callback(avatar, limb_bone, row_dict, C)
-			yield viztask.waitTime(0.1)
+			yield viztask.waitTime(0.01)
 
 
 quat = viz.Quat(1,0,0,0)
@@ -65,17 +65,31 @@ for method in methods:
 if __name__ == "__main__":
 	#pass
 	viztask.schedule(main())
-	
+	#testing()
 
+
+def testing():
 	
-	#test_dic = {
-	#	'quatw': 0.9239,
-	#	'quatx': 0.0,
-	#	'quaty': -0.3827,
-	#	'quatz': 0.0
-	#}
+	test_dic = {
+		'quatw': 0.9239,
+		'quatx': 0.0,
+		'quaty': 0.3827,
+		'quatz': 0.0
+	}
+	test_quat = viz.Quat(0.0,-0.3827,0.0, 0.9239)
+	
+	incoming_dic = {
+		'quatw': 0.4384231676703282,
+		'quatx':  0.7482955650736513,
+		'quaty': 0.4554319925956999,
+		'quatz': -0.1910514429577342
+	
+	}
+	
+	
+	random_quat = viz.Quat(0.4384231676703282, 0.7482955650736513, 0.4554319925956999, -0.1910514429577342)
+	
+	calibrate_quat = test_quat * random_quat.inverse()
 				
-				
-				
-	#dataprocess_callback(avatar, limb_bone, test_dic)
+	dataprocess_callback(avatar, limb_bone, test_dic, viz.Quat(0,0,0,1))
 	

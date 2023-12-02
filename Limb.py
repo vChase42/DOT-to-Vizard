@@ -59,7 +59,7 @@ class Limb:
         self.stream_success = True
         data_dictionary = self.encode_custommode5(data)
 
-        self.current_quat = viz.Quat(data_dictionary['quatw'],data_dictionary['quatx'],data_dictionary['quaty'],data_dictionary['quatz'])
+        self.current_quat = viz.Quat(data_dictionary['quatx'],data_dictionary['quaty'],data_dictionary['quatz'],data_dictionary['quatw'])
         self.dataprocesser_callback(self.avatar, self.limb_bone, data_dictionary, self.calibrate_quat)
         
         
@@ -152,7 +152,7 @@ class Limb:
         self.writer.writerow(my_dictionary)
         
     def send_calibrate_message(self):
-        desired_quat = viz.Quat(0.9239,0.0,-0.3827,0.0)
+        desired_quat = viz.Quat(0.0,-0.3827,0.0,0.9239)
 
         self.calibrate_quat = desired_quat * self.current_quat.inverse()
         
