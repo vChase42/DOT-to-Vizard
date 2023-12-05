@@ -6,66 +6,69 @@ import vizcam
 import math
 import numpy as np
 
-filename = "output_Bip01 L Forearm.csv"         #modify this
-limb_name = filename.split('_')[1].split('.')[0]
-
-#limb_name = "Bip01 R Forearm"
-
 avatar = viz.addAvatar('vcc_male2.cfg')
-limb_bone = avatar.getBone(limb_name)
-limb_bone.lock()
-
-
 vizcam.PivotNavigate(center=[0, 1.8, 0], distance=3)
 viz.go()
 
 
 
+files = []          #Add all limb csv's to this list.
+
+files.append("data/output_Bip01 L Forearm.csv")               
+files.append("data/output_Bip01 L UpperArm.csv")
+
+limb_names = [x.split('_')[1].split('.')[0] for x in files]
+limb_bones = [avatar.getBone(x) for x in limb_names]
+for limb_bone in limb_bones:
+	limb_bone.lock()
+
+
+
+def read_csv(csv_file):
+    data = []
+    with open(csv_file, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            data.append(row)
+    return data
+
+
 def main():
-	with open(filename, mode='r') as file:
-		csv_reader = csv.DictReader(file)
+	list_of_csvs = [read_csv(x) for x in files]
 		
+	test_dic = {
+		'quatw': 0.9239,
+		'quatx': 0.0,
+		'quaty': -0.3827,
+		'quatz': 0.0
+	}
+	
+	A = viz.Quat(test_dic['quatx'],test_dic['quaty'],test_dic['quatz'],test_dic['quatw'])
+	C = []
 		
-		test_dic = {
-			'quatw': 0.9239,
-			'quatx': 0.0,
-			'quaty': -0.3827,
-			'quatz': 0.0
-		}
-		
-		A = viz.Quat(test_dic['quatx'],test_dic['quaty'],test_dic['quatz'],test_dic['quatw'])
-		C = viz.Quat(0,0,0,1)
-		
-		flag = True
-		
-		
-		for row in csv_reader:
-			row_dict = dict(row)
-			
+	for limb in list_of_csvs:
+		B = viz.Quat(limb[0]['quatx'],limb[0]['quaty'],limb[0]['quatz'],limb[0]['quatw'])
+		C.append(B.inverse() * A)
+	
 
-			if(flag):
-				flag=False
-				B = viz.Quat(row_dict['quatx'],row_dict['quaty'],row_dict['quatz'],row_dict['quatw'])
-				C = B.inverse() * A
-			
-			dataprocess_callback(avatar, limb_bone, row_dict, C)
-			yield viztask.waitTime(0.01)
-
-
-quat = viz.Quat(1,0,0,0)
-all_attributes = dir(quat)
-
-# Filter and print only the methods
-methods = [attr for attr in all_attributes if callable(getattr(quat, attr))]
-for method in methods:
-    print(method)
-
+	count = max([len(x) for x in list_of_csvs])
+	print(count)
+	
+	for i in range(count):
+		for ilimb in range(len(list_of_csvs)):
+			if(len(list_of_csvs[ilimb]) <= i): continue
+			dataprocess_callback(avatar,limb_bones[ilimb],list_of_csvs[ilimb][i],C[ilimb])
+		yield viztask.waitTime(0.01)
+	
 
 
 if __name__ == "__main__":
 	#pass
 	viztask.schedule(main())
 	#testing()
+
+
+
 
 
 def testing():

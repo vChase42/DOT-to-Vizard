@@ -30,7 +30,7 @@ class DOT_Configuration:
 		#add config address-bone pairs
 		for key,value in addr_bone_dic.items():
 			#print(key,value)
-			self.add_sensor(key,value)
+			self.add_sensor_to_panel(key,value)
 		
 		self.done_func = call_back_func
 
@@ -60,7 +60,7 @@ class DOT_Configuration:
 		vizact.onbuttonup(done_button,self.done_configuration)
 		
 		
-	def add_sensor(self,address,body_part):
+	def add_sensor_to_panel(self,address,body_part):
 		dlg_sensor = vizdlg.Panel(layout=vizdlg.LAYOUT_HORZ_BOTTOM,border=False,background=False,margin=0)
 
 		#Textbox
@@ -106,7 +106,7 @@ class DOT_Configuration:
 		address = row.getChildren()[2].get()
 		body_part = bone_list[row.getChildren()[3].getSelection()]
 		
-		self.add_sensor(address,body_part)
+		self.add_sensor_to_panel(address,body_part)
 		self.configureWindow.remove()
 		
 	def done_configuration(self):
@@ -152,7 +152,7 @@ class DOT_Status:
 
 		for key,value in addr_bone_dictionary.items():
 		#	#populate an address/button dictionary
-			self.add_sensor(key,value)
+			self.add_sensor_to_panel(key,value)
 
 
 	def populate_panel(self):
@@ -174,7 +174,7 @@ class DOT_Status:
 		
 		
 
-	def add_sensor(self,address,body_part):
+	def add_sensor_to_panel(self,address,body_part):
 		body_text = viz.addText(body_part)
 		status = viz.addText('Getting Status')		
 		file = viz.addCheckbox()

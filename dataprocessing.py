@@ -2,16 +2,16 @@
 
 
 
-# timestamp,quatw,quatx,quaty,quatz,freex,freey,freez,ang_vel_x,ang_vel_y,ang_vel_z
+# data = {} where: timestamp,quatw,quatx,quaty,quatz,freex,freey,freez,ang_vel_x,ang_vel_y,ang_vel_z
 
 def dataprocess_callback(avatar, limb_bone, data, calibrate_quat):
 	
-	#print(f"Timestamp: {data_dictionary['timestamp']}, Quaternion-w: {data_dictionary['quatw']}")
+	#print(f"Timestamp: {data['timestamp']}, Quaternion-w: {data['quatw']}")
 	
 	
 	quaternion = viz.Quat(data['quatx'],data['quaty'],data['quatz'],data['quatw'])
-	print(quaternion)
+	#print(quaternion)
 	quaternion = calibrate_quat * quaternion
-	print(quaternion)
+	#print(quaternion)
 	limb_bone.setQuat(quaternion)
 	# hand.setPosition(hand.getPosition()+viz.Vector(x,y,z))
