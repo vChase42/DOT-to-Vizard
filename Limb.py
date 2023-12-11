@@ -41,7 +41,10 @@ class Limb:
                     
         #file management
         self.writeData = write
-        self.filename = f"output_{self.limb_name}.csv"
+        
+        current_time_str = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+        self.filename = f"output_{current_time_str}_{self.limb_name}.csv"
+
         self.file = None
         self.writer = None        
 

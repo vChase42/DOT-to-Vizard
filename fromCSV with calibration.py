@@ -5,16 +5,12 @@ import viz
 import vizcam
 import math
 import numpy as np
-import vizshape
 
 avatar = viz.addAvatar('vcc_male2.cfg')
 vizcam.PivotNavigate(center=[0, 1.8, 0], distance=3)
 viz.go()
 
-world_axes = vizshape.addAxes()
-X = viz.addText3D('X',pos=[1.1,0,0],color=viz.RED,scale=[0.3,0.3,0.3],parent=world_axes)
-Y = viz.addText3D('Y',pos=[0,1.1,0],color=viz.GREEN,scale=[0.3,0.3,0.3],align=viz.ALIGN_CENTER_BASE,parent=world_axes)
-Z = viz.addText3D('Z',pos=[0,0,1.1],color=viz.BLUE,scale=[0.3,0.3,0.3],align=viz.ALIGN_CENTER_BASE,parent=world_axes)
+
 
 files = []          #Add all limb csv's to this list.
 
@@ -27,11 +23,6 @@ limb_bones = [avatar.getBone(x) for x in limb_names]
 for limb_bone in limb_bones:
 	limb_bone.lock()
 
-
-#angle = math.radians(45)
-#quat = viz.Quat(0, math.sin(angle), 0,math.cos(angle))
-quat = viz.Quat(0.0,0.0,0.0, 1.0)         #identity quaternion
-#quat = viz.Quat(0.0,7.07,0.0, 7.07)       #identity quaternion
 
 
 def read_csv(csv_file):
@@ -46,14 +37,29 @@ def read_csv(csv_file):
 def main():
 	list_of_csvs = [read_csv(x) for x in files]
 		
+	test_dic = {
+		'quatw': 0.9239,
+		'quatx': 0.0,
+		'quaty': -0.3827,
+		'quatz': 0.0
+	}
+	
+	A = viz.Quat(0.0,-7.07,0.0, 7.07)
+	C = []
+		
+	for limb in list_of_csvs:
+		B = viz.Quat(limb[0]['quatx'],limb[0]['quaty'],limb[0]['quatz'],limb[0]['quatw'])
+		C.append(B.inverse() * A)
+	
+
 	count = max([len(x) for x in list_of_csvs])
 	print(count)
 	
 	for i in range(count):
 		for ilimb in range(len(list_of_csvs)):
 			if(len(list_of_csvs[ilimb]) <= i): continue
-			dataprocess_callback(avatar,limb_bones[ilimb],list_of_csvs[ilimb][i],quat)
-		yield viztask.waitTime(0.03)
+			dataprocess_callback(avatar,limb_bones[ilimb],list_of_csvs[ilimb][i],C[ilimb])
+		yield viztask.waitTime(0.01)
 	
 
 
