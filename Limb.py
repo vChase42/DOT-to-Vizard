@@ -12,7 +12,18 @@ from datetime import datetime
 def time_string():
 	return "[" + datetime.now().strftime("%H:%S") + "]"
 
-	
+def multiply_quaternions(q1, q2):
+    x1, y1, z1, w1 = q1.x, q1.y, q1.z, q1.w
+    x2, y2, z2, w2 = q2.x, q2.y, q2.z, q2.w
+
+    # Calculate the product components
+    x = w1*x2 + x1*w2 + y1*z2 - z1*y2
+    y = w1*y2 - x1*z2 + y1*w2 + z1*x2
+    z = w1*z2 + x1*y2 - y1*x2 + z1*w2
+    w = w1*w2 - x1*x2 - y1*y2 - z1*z2
+
+    return viz.Quat(x, y, z, w)
+
 
 class Limb:
     def __init__(self, dot_address, limb_name, avatar, callback_func, write = False):
@@ -26,8 +37,8 @@ class Limb:
         self.dataprocesser_callback = callback_func
         
         #limb coordinate calibration
-        self.calibrate_quat = viz.Quat(1,0,0,0)
-        self.current_quat = viz.Quat(1,0,0,0)
+        self.calibrate_quat = viz.Quat(0,0,0,1)
+        self.current_quat = viz.Quat(0,0,0,1)
         
         #Xsens DOT sensor variables
         self.client = BleakClient("00:00:00:00:00:00")  
@@ -42,9 +53,8 @@ class Limb:
         #file management
         self.writeData = write
         
-        current_time_str = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
-        self.filename = f"output_{current_time_str}_{self.limb_name}.csv"
-
+        #current_time_str = datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
+        self.filename = f"output_{self.limb_name}.csv"
         self.file = None
         self.writer = None        
 
@@ -155,9 +165,9 @@ class Limb:
         self.writer.writerow(my_dictionary)
         
     def send_calibrate_message(self):
-        desired_quat = viz.Quat(0.0,-0.3827,0.0,0.9239)
+        desired_quat = viz.Quat(0.0,0,0.0,1)
 
-        self.calibrate_quat = desired_quat * self.current_quat.inverse()
+        self.calibrate_quat = multiply_quaternions(desired_quat, self.current_quat.inverse())
         
         
         #if(self.client.is_connected):

@@ -31,8 +31,9 @@ for limb_bone in limb_bones:
 #angle = math.radians(45)
 #quat = viz.Quat(0, math.sin(angle), 0,math.cos(angle))
 quat = viz.Quat(0.0,0.0,0.0, 1.0)         #identity quaternion
-#quat = viz.Quat(0.0,7.07,0.0, 7.07)       #identity quaternion
-
+quat = viz.Quat(0.0,0.707,0.0, 0.707)       #Calibrate Correction
+#quat = viz.Quat(0.707, 0.0, 0.707, 0)
+#quat = viz.Quat(-0.5652620637716952, 0.3097127774868339, -0.7630666873549519, 0.04453403112236093)
 
 def read_csv(csv_file):
     data = []
@@ -60,34 +61,3 @@ def main():
 if __name__ == "__main__":
 	#pass
 	viztask.schedule(main())
-	#testing()
-
-
-
-
-
-def testing():
-	
-	test_dic = {
-		'quatw': 0.9239,
-		'quatx': 0.0,
-		'quaty': 0.3827,
-		'quatz': 0.0
-	}
-	test_quat = viz.Quat(0.0,-0.3827,0.0, 0.9239)
-	
-	incoming_dic = {
-		'quatw': 0.4384231676703282,
-		'quatx':  0.7482955650736513,
-		'quaty': 0.4554319925956999,
-		'quatz': -0.1910514429577342
-	
-	}
-	
-	
-	random_quat = viz.Quat(0.4384231676703282, 0.7482955650736513, 0.4554319925956999, -0.1910514429577342)
-	
-	calibrate_quat = test_quat * random_quat.inverse()
-				
-	dataprocess_callback(avatar, limb_bone, test_dic, viz.Quat(0,0,0,1))
-	

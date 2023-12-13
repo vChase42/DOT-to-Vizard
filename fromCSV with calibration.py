@@ -59,7 +59,7 @@ def main():
 		for ilimb in range(len(list_of_csvs)):
 			if(len(list_of_csvs[ilimb]) <= i): continue
 			dataprocess_callback(avatar,limb_bones[ilimb],list_of_csvs[ilimb][i],C[ilimb])
-		yield viztask.waitTime(0.01)
+		yield viztask.waitTime(0.03)
 	
 
 
