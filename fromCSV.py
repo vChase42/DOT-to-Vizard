@@ -7,6 +7,9 @@ import math
 import numpy as np
 import vizshape
 
+
+#THIS SCRIPT NOT ONLY LOADS DATA FROM A CSV, BUT APPLIES A CALIBRATION FUNCTION TO THE LOADED DATA, AS SAVED DATA SAVED BY THE MOVELLA-DOT IS CURRENTLY INCORRECT
+
 avatar = viz.addAvatar('vcc_male2.cfg')
 vizcam.PivotNavigate(center=[0, 1.8, 0], distance=3)
 viz.go()
@@ -18,8 +21,8 @@ Z = viz.addText3D('Z',pos=[0,0,1.1],color=viz.BLUE,scale=[0.3,0.3,0.3],align=viz
 
 files = []          #Add all limb csv's to this list.
 
-#files.append("data/output_Bip01 L Forearm.csv")
-#files.append("data/output_Bip01 L UpperArm.csv")
+files.append("data/output_Bip01 L Forearm.csv")
+files.append("data/output_Bip01 L UpperArm.csv")
 files.append("data/output_Bip01 R UpperArm.csv")
 
 limb_names = [x.split('_')[1].split('.')[0] for x in files]
@@ -30,8 +33,8 @@ for limb_bone in limb_bones:
 
 #angle = math.radians(45)
 #quat = viz.Quat(0, math.sin(angle), 0,math.cos(angle))
-quat = viz.Quat(0.0,0.0,0.0, 1.0)         #identity quaternion
-quat = viz.Quat(0.0,0.707,0.0, 0.707)       #Calibrate Correction
+correction_quat = viz.Quat(0.0,0.0,0.0, 1.0)         #identity quaternion
+correction_quat = viz.Quat(0.0,0.707,0.0, 0.707)       #Calibrate Correction
 #quat = viz.Quat(0.707, 0.0, 0.707, 0)
 #quat = viz.Quat(-0.5652620637716952, 0.3097127774868339, -0.7630666873549519, 0.04453403112236093)
 
@@ -53,7 +56,7 @@ def main():
 	for i in range(count):
 		for ilimb in range(len(list_of_csvs)):
 			if(len(list_of_csvs[ilimb]) <= i): continue
-			dataprocess_callback(avatar,limb_bones[ilimb],list_of_csvs[ilimb][i],quat)
+			dataprocess_callback(avatar,limb_bones[ilimb],list_of_csvs[ilimb][i],correction_quat)
 		yield viztask.waitTime(0.03)
 	
 
